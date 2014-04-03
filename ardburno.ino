@@ -6,14 +6,19 @@ void setup() {
   pinMode(ADR_DATA, OUTPUT);
   pinMode(ADR_SCLK, OUTPUT);
   pinMode(ADR_RCLK, OUTPUT);
+  shiftValue(4456);
 }
 
 void loop() {
-  shift(HIGH);
-  shift(LOW);
 }
 
-void shift(int state) {
+void shiftValue(unsigned int value) {
+  for (int i = 15; i >= 0; i--) {
+    shiftBit((value & (1<<i)) != 0);
+  }
+}
+
+void shiftBit(int state) {
   digitalWrite(ADR_DATA, state);
   digitalWrite(ADR_SCLK, HIGH);
   digitalWrite(ADR_RCLK, HIGH);
