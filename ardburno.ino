@@ -1,62 +1,127 @@
-int ADR_DATA = A0;
-int ADR_SCLK = A1;
-int ADR_RCLK = A2;
+#define ADR_DATA A0
+#define ADR_SCLK A1
+#define ADR_RCLK A2
 
-int SHIFT_DELAY_MS = 0;
+#define ROM_CE A3
+#define ROM_OE A4
+#define ROM_WE A5
 
-int ROM_CE = A3;
-int ROM_OE = A4;
-int ROM_WE = A5;
+#define D0 2
+#define D1 3
+#define D2 4
+#define D3 5
+#define D4 6
+#define D5 7
+#define D6 8
+#define D7 9
 
-int D0 = 2;
-int D1 = 3;
-int D2 = 4;
-int D3 = 5;
-int D4 = 6;
-int D5 = 7;
-int D6 = 8;
-int D7 = 9;
+#include <stdarg.h>
+void p(char *fmt, ... ){
+  static char buf[128];
+  va_list args;
+  va_start (args, fmt );
+  vsnprintf(buf, 128, fmt, args);
+  va_end (args);
+  Serial.print(buf);
+}
+
+unsigned long start = 0;
 
 void setup() {                
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   pinMode(ADR_DATA, OUTPUT);
   pinMode(ADR_SCLK, OUTPUT);
   pinMode(ADR_RCLK, OUTPUT);
-  
+  pinMode(ROM_CE, OUTPUT);
+  pinMode(ROM_OE, OUTPUT);
+  pinMode(ROM_WE, OUTPUT);
+
+  romSignalSetup();
+
   Serial.print("\n\n\n");
 }
 
-unsigned int address = 0;
+void romSignalSetup() {
+  digitalWrite(ROM_OE, HIGH);
+  digitalWrite(ROM_WE, HIGH);
+  digitalWrite(ROM_CE, LOW);
+}
+
+void printTime() {
+  unsigned long now = millis();
+  unsigned int total_seconds = (now - start) / 1000;
+  unsigned int total_millis = (now - start) % 1000;
+  p("Took %d.%03d seconds.\n", total_seconds, total_millis);
+}
+
+boolean done = false;
 
 void loop() {
-  if (address == 0x8000) {
+  if (done) {
+    //digitalWrite(ROM_WE, HIGH);
+    //digitalWrite(ROM_OE, LOW);
+    //shiftValue(1);
+    //p(" %02X\n", readByte());
     return;
   }
 
-  Serial.print(address, HEX);
+  start = millis();
+  writeRom();
+  printTime();
 
-  for (int i = 0; i < 64; i++) {
-    shiftValue(address + i);
-    byte data = readData();
-    Serial.print(' ');
-    printHex(data);
+  delay(100);
+  
+  start = millis();
+  readRom(0x0100);
+  printTime();
+
+  done = true;
+}
+
+#define COLUMNS 64
+
+void readRom(unsigned int count) {
+  readSetup();
+
+  for(unsigned int i = 0; i < count; i += COLUMNS) {
+    p("%04X", i);
+
+    for (int j = 0; j < COLUMNS; j++) {
+      shiftValue(i + j);
+      p(" %02X", readByte());
+      delay(1000);
+      shiftValue(0);
+      p(" %02X", readByte());
+      delay(1000);
+    }
+
+    Serial.print('\n');
+  }
+}
+
+#define BYTE_TO_WRITE 20
+
+void writeRom() {
+  writeSetup();
+
+  for(unsigned int i = 0; i < 0x0100; i += COLUMNS) {
+    if (i % 0x1000 == 0) {
+      p("\n%04X ", i);
+    }
+
+    for (int j = 0; j < COLUMNS; j++) {
+      shiftValue(i + j);
+      writeByte(BYTE_TO_WRITE);
+    }
+
+    Serial.print('.');
   }
 
   Serial.print('\n');
-  delay(0);
-  address += 64;
 }
 
-void printHex(byte val) {
-  if (val < 0x10) {
-    Serial.print(0);
-  }
-  Serial.print(val, HEX);
-  //Serial.print((char) val);
-}
-
-byte readData() {
+void readSetup() {
   pinMode(D0, INPUT);
   pinMode(D1, INPUT);
   pinMode(D2, INPUT);
@@ -66,38 +131,51 @@ byte readData() {
   pinMode(D6, INPUT);
   pinMode(D7, INPUT);
 
-  digitalWrite(ROM_CE, LOW);
   digitalWrite(ROM_WE, HIGH);
   digitalWrite(ROM_OE, LOW);
+}
+
+void writeSetup() {
+  pinMode(D0, OUTPUT);
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
+  pinMode(D4, OUTPUT);
+  pinMode(D5, OUTPUT);
+  pinMode(D6, OUTPUT);
+  pinMode(D7, OUTPUT);
+
+  digitalWrite(ROM_OE, HIGH);
+}
+
+void writeByte(byte value) {
+  digitalWrite(D0, (bitRead(value, 0)));
+  digitalWrite(D1, (bitRead(value, 1)));
+  digitalWrite(D2, (bitRead(value, 2)));
+  digitalWrite(D3, (bitRead(value, 3)));
+  digitalWrite(D4, (bitRead(value, 4)));
+  digitalWrite(D5, (bitRead(value, 5)));
+  digitalWrite(D6, (bitRead(value, 6)));
+  digitalWrite(D7, (bitRead(value, 7)));
   
-  delay(1);
+  digitalWrite(ROM_WE, LOW);
+  digitalWrite(ROM_WE, HIGH);
 
-  byte val =
-    (digitalRead(D0) << 7) +
-    (digitalRead(D1) << 6) +
-    (digitalRead(D2) << 5) +
-    (digitalRead(D3) << 4) +
-    (digitalRead(D4) << 3) +
-    (digitalRead(D5) << 2) +
-    (digitalRead(D6) << 1) +
-    (digitalRead(D7) << 0);
+  delay(6);
+}
 
-  return val;
+byte readByte() {
+  return ((PIND & 0b11111100) >> 2) +
+    ((PINB & 0b00000011) << 6);
 }
 
 void shiftValue(unsigned int value) {
   for (int i = 15; i >= 0; i--) {
-    shiftBit((value & (1<<i)) != 0);
+    digitalWrite(ADR_DATA, bitRead(value, i) != 0);
+    digitalWrite(ADR_SCLK, HIGH);
+    digitalWrite(ADR_SCLK, LOW);
   }
-}
-
-void shiftBit(int state) {
-  digitalWrite(ADR_DATA, state);
-  digitalWrite(ADR_SCLK, HIGH);
   digitalWrite(ADR_RCLK, HIGH);
-  delay(SHIFT_DELAY_MS);
-  digitalWrite(ADR_SCLK, LOW);
   digitalWrite(ADR_RCLK, LOW);
-  delay(SHIFT_DELAY_MS);
 }
 
