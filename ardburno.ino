@@ -96,7 +96,7 @@ void readRom(unsigned int count) {
   }
 }
 
-#define BYTE_TO_WRITE 15
+#define BYTE_TO_WRITE 33
 
 void writeRom() {
   writeSetup();
@@ -107,9 +107,7 @@ void writeRom() {
     }
 
     for (int j = 0; j < COLUMNS; j++) {
-      shiftValue(i + j);
-
-      writeByte(BYTE_TO_WRITE);
+      writeByte(i + j, BYTE_TO_WRITE);
     }
 
     Serial.print('.');
@@ -143,9 +141,16 @@ void writeSetup() {
   pinMode(D7, OUTPUT);
 
   digitalWrite(ROM_OE, HIGH);
+  digitalWrite(ROM_WE, HIGH);
 }
 
-void writeByte(byte value) {
+void writeByte(unsigned int address, byte value) {
+  shiftValue(address);
+
+  delay(5); // tADH
+  
+  digitalWrite(ROM_WE, LOW);
+
   digitalWrite(D0, (bitRead(value, 0)));
   digitalWrite(D1, (bitRead(value, 1)));
   digitalWrite(D2, (bitRead(value, 2)));
@@ -155,10 +160,11 @@ void writeByte(byte value) {
   digitalWrite(D6, (bitRead(value, 6)));
   digitalWrite(D7, (bitRead(value, 7)));
 
-  digitalWrite(ROM_WE, LOW);
+  delay(5); // tWP
+
   digitalWrite(ROM_WE, HIGH);
 
-  delay(6);
+  delay(15); // ?
 }
 
 byte readByte() {
