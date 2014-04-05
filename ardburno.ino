@@ -90,17 +90,13 @@ void readRom(unsigned int count) {
     for (int j = 0; j < COLUMNS; j++) {
       shiftValue(i + j);
       p(" %02X", readByte());
-      delay(1000);
-      shiftValue(0);
-      p(" %02X", readByte());
-      delay(1000);
     }
 
     Serial.print('\n');
   }
 }
 
-#define BYTE_TO_WRITE 20
+#define BYTE_TO_WRITE 15
 
 void writeRom() {
   writeSetup();
@@ -112,6 +108,7 @@ void writeRom() {
 
     for (int j = 0; j < COLUMNS; j++) {
       shiftValue(i + j);
+
       writeByte(BYTE_TO_WRITE);
     }
 
@@ -157,7 +154,7 @@ void writeByte(byte value) {
   digitalWrite(D5, (bitRead(value, 5)));
   digitalWrite(D6, (bitRead(value, 6)));
   digitalWrite(D7, (bitRead(value, 7)));
-  
+
   digitalWrite(ROM_WE, LOW);
   digitalWrite(ROM_WE, HIGH);
 
