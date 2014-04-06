@@ -29,28 +29,38 @@ void loop() {
   Serial.println(input);
 }
 
+char readChar() {
+  char data = (char) Serial.read();
+  if (echo) {
+    Serial.write(data);
+    if (data == '\r') {
+      Serial.write('\n');
+    }
+  }
+
+  return data;
+}
+
+
 char * getLine() {
   static char buffer[24];
   static byte i = 0;
 
   while (true) {
     if (Serial.available() > 0) {
-      char data = (char) Serial.read();
+      char data = readChar();
 
       if (data == '\r') {
         buffer[i] = '\0';
-        Serial.print("\r\n");
         break;
-      }
-
-      if (echo) {
-        Serial.print(data);
       }
 
       buffer[i] = data;
       i++;
     }
   }
+
+  i = 0;
 
   return buffer;
 }
