@@ -2,6 +2,10 @@
 
 #define BAUD_RATE 115200
 
+#define ADR_DATA A0
+#define ADR_SCLK A1
+#define ADR_RCLK A2
+
 #define ROM_CE A3
 #define ROM_OE A4
 #define ROM_WE A5
@@ -34,9 +38,20 @@ void pf(char *fmt, ... ) {
 void setup() {
   Serial.begin(BAUD_RATE);
 
+  signalSetup();
+
   CE(0);
   OE(0);
   WE(0);
+}
+
+void signalSetup() {
+  pinMode(ADR_DATA, OUTPUT);
+  pinMode(ADR_SCLK, OUTPUT);
+  pinMode(ADR_RCLK, OUTPUT);
+  pinMode(ROM_CE, OUTPUT);
+  pinMode(ROM_OE, OUTPUT);
+  pinMode(ROM_WE, OUTPUT);
 }
 
 void printPrompt() {
@@ -53,13 +68,53 @@ void loop() {
 
 void dispatch(char cmd, char * args) {
   switch(cmd) {
-    case('v'):
+    case 'v':
       commandVersion();
+      break;
+    case 's':
+      commandShift(args);
       break;
     default:
       commandError(cmd);
       break;
   }
+}
+
+void commandShift(char * args) {
+  char input[7] = "0x1234";
+
+  for (int i = 0; i < 4; i++) {
+    if (args[i] == '\0') {
+      input[i+2] = '\0';
+      break;
+    }
+
+    input[i+2] = args[i];
+  }
+
+  unsigned int address;
+  sscanf(input, "%x", &address);
+
+  shift(address);
+}
+
+void clock() {
+  digitalWrite(ADR_SCLK, HIGH);
+  digitalWrite(ADR_SCLK, LOW);
+}
+
+void latch() {
+  digitalWrite(ADR_RCLK, HIGH);
+  digitalWrite(ADR_RCLK, LOW);
+}
+
+void shift(unsigned int value) {
+  for(int i = 15; i >= 0; i--) {
+    digitalWrite(ADR_DATA, bitRead(value, i) != 0);
+    clock();
+  }
+
+  latch();
 }
 
 void commandVersion() {
