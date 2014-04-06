@@ -1,3 +1,5 @@
+#include <stdarg.h>
+
 #define BAUD_RATE 115200
 
 #define ROM_CE A3
@@ -8,7 +10,26 @@
 #define OE(state) digitalWrite(ROM_OE, !state)
 #define WE(state) digitalWrite(ROM_WE, !state)
 
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 0
+#define VERSION_PATCH 1
+
 boolean echo = true;
+
+void p(char *string) {
+  Serial.println(string);
+}
+
+void pf(char *fmt, ... ) {
+  static char buf[128];
+
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buf, 128, fmt, args);
+  va_end(args);
+
+  p(buf);
+}
 
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -26,7 +47,27 @@ void loop() {
   printPrompt();
 
   char *input = getLine();
-  Serial.println(input);
+
+  dispatch(input[0], input + 1);
+}
+
+void dispatch(char cmd, char * args) {
+  switch(cmd) {
+    case('v'):
+      commandVersion();
+      break;
+    default:
+      commandError(cmd);
+      break;
+  }
+}
+
+void commandVersion() {
+  pf("Version %d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+}
+
+void commandError(char cmd) {
+  pf("Don't know command '%c'.", cmd);
 }
 
 char readChar() {
