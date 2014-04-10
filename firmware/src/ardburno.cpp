@@ -1,93 +1,7 @@
 #include <Arduino.h>
 
+#include "config.h"
 #include "util.h"
-
-#define BAUD_RATE 115200
-
-#define ADR_DATA A0
-#define ADR_SCLK A1
-#define ADR_RCLK A2
-
-#define D0 2
-#define D1 3
-#define D2 4
-#define D3 5
-#define D4 6
-#define D5 7
-#define D6 8
-#define D7 9
-
-#define ROM_CE A3
-#define ROM_OE A4
-#define ROM_WE A5
-
-#define CE(state) digitalWrite(ROM_CE, !state)
-#define OE(state) digitalWrite(ROM_OE, !state)
-#define WE(state) digitalWrite(ROM_WE, !state)
-
-#define VERSION_MAJOR 0
-#define VERSION_MINOR 0
-#define VERSION_PATCH 1
-
-boolean echo = true;
-
-
-void printPrompt() {
-  Serial.print("> ");
-}
-
-char readChar() {
-  char data = (char) Serial.read();
-  if (echo) {
-    Serial.write(data);
-    if (data == '\r') {
-      Serial.write('\n');
-    }
-  }
-
-  return data;
-}
-
-char * getLine() {
-  static char buffer[24];
-  static byte i = 0;
-
-  while (true) {
-    if (Serial.available() > 0) {
-      char data = readChar();
-
-      if (data == '\r') {
-        buffer[i] = '\0';
-        break;
-      }
-
-      buffer[i] = data;
-      i++;
-    }
-  }
-
-  i = 0;
-
-  return buffer;
-}
-
-unsigned int fromHex(char * hex, byte size) {
-  char buffer[7] = "0x\0\0\0\0";
-  unsigned int address;
-
-  for (int i = 0; i < (size * 2); i++) {
-    if (hex[i] == '\0') {
-      buffer[i+2] = '\0';
-      break;
-    }
-
-    buffer[i+2] = hex[i];
-  }
-
-  sscanf(buffer, "%x", &address);
-
-  return address;
-}
 
 void signalSetup() {
   pinMode(ADR_DATA, OUTPUT);
@@ -111,8 +25,6 @@ void signalSetup() {
   OE(0);
   WE(0);
 }
-
-/* Interfacing */
 
 void clock() {
   digitalWrite(ADR_SCLK, HIGH);
@@ -143,8 +55,6 @@ void data(byte value) {
   digitalWrite(D6, (bitRead(value, 6)));
   digitalWrite(D7, (bitRead(value, 7)));
 }
-
-/* Commands */
 
 void commandShift(char * args) {
   unsigned int address = fromHex(args, 2);
@@ -182,8 +92,6 @@ void dispatch(char cmd, char * args) {
       break;
   }
 }
-
-/* Entry */
 
 void setup() {
   Serial.begin(BAUD_RATE);
