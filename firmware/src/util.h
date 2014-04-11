@@ -1,5 +1,3 @@
-void p(char *string);
-void pf(char *fmt, ...);
 void printPrompt();
 char readChar();
 char * getLine();

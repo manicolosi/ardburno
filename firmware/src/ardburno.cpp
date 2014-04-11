@@ -1,9 +1,11 @@
+#include <stdio.h>
 #include <Arduino.h>
 
 #include "config.h"
 #include "util.h"
 #include "address_bus.h"
 #include "data_bus.h"
+#include "printf.h"
 
 void commandShift(char * args) {
   unsigned int address = fromHex(args, 2);
@@ -19,11 +21,11 @@ void commandData(char * args) {
 }
 
 void commandVersion() {
-  pf("Version %d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+  printf("Version %d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 }
 
 void commandError(char cmd) {
-  pf("Don't know command '%c'.", cmd);
+  printf("Don't know command '%c'\n", cmd);
 }
 
 void dispatch(char cmd, char * args) {
@@ -58,8 +60,7 @@ void signal_setup() {
 }
 
 void setup() {
-  Serial.begin(BAUD_RATE);
-
+  printf_setup();
   signal_setup();
 }
 

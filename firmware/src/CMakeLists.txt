@@ -6,4 +6,5 @@ generate_arduino_firmware(ardburno
   SRCS ardburno.cpp
        util.cpp
        address_bus.cpp
-       data_bus.cpp)
+       data_bus.cpp
+       printf.cpp)
