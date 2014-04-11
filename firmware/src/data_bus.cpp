@@ -15,7 +15,7 @@ void data_bus_output() {
 }
 
 // TODO: Optimize
-void data_bus_write(byte value) {
+void data_bus_write(uint8_t value) {
   digitalWrite(D0, (bitRead(value, 0)));
   digitalWrite(D1, (bitRead(value, 1)));
   digitalWrite(D2, (bitRead(value, 2)));

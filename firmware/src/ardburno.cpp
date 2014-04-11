@@ -8,13 +8,13 @@
 #include "printf.h"
 
 void commandShift(char * args) {
-  unsigned int address = fromHex(args, 2);
+  uint16_t address = fromHex(args, 2);
 
   address_bus_set(address);
 }
 
 void commandData(char * args) {
-  byte value = (byte) fromHex(args, 1);
+  uint8_t value = (uint8_t) fromHex(args, 1);
 
   data_bus_output();
   data_bus_write(value);

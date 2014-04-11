@@ -38,9 +38,9 @@ char * getLine() {
   return buffer;
 }
 
-unsigned int fromHex(char * hex, byte size) {
+uint16_t fromHex(char * hex, int size) {
   char buffer[7] = "0x\0\0\0\0";
-  unsigned int address;
+  uint16_t data;
 
   for (int i = 0; i < (size * 2); i++) {
     if (hex[i] == '\0') {
@@ -51,7 +51,7 @@ unsigned int fromHex(char * hex, byte size) {
     buffer[i+2] = hex[i];
   }
 
-  sscanf(buffer, "%x", &address);
+  sscanf(buffer, "%x", &data);
 
-  return address;
+  return data;
 }

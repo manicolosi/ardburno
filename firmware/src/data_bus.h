@@ -1,2 +1,2 @@
 void data_bus_output();
-void data_bus_write(byte value);
+void data_bus_write(uint8_t value);

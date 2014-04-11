@@ -1,4 +1,4 @@
 void printPrompt();
 char readChar();
 char * getLine();
-unsigned int fromHex(char * hex, byte size);
+uint16_t fromHex(char * hex, int size);

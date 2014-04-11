@@ -12,7 +12,7 @@ void address_bus_latch() {
   digitalWrite(ADR_RCLK, LOW);
 }
 
-void address_bus_set(unsigned int value) {
+void address_bus_set(uint16_t value) {
   for(int i = 15; i >= 0; i--) {
     digitalWrite(ADR_DATA, bitRead(value, i) != 0);
     address_bus_clock();
