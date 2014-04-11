@@ -4,4 +4,6 @@ set(ARDUINO_DEFAULT_SERIAL screen @SERIAL_PORT@ 115200)
 
 generate_arduino_firmware(ardburno
   SRCS ardburno.cpp
-       util.cpp)
+       util.cpp
+       address_bus.cpp
+       data_bus.cpp)
