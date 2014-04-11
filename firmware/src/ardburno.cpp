@@ -6,6 +6,7 @@
 #include "address_bus.h"
 #include "data_bus.h"
 #include "printf.h"
+#include "eeprom.h"
 
 void commandShift(char * args) {
   uint16_t address = fromHex(args, 2);
@@ -18,6 +19,14 @@ void commandData(char * args) {
 
   data_bus_output();
   data_bus_write(value);
+}
+
+void commandReadByte(char * args) {
+  uint16_t address = fromHex(args, 2);
+
+  uint8_t data = eeprom_read_byte(address);
+
+  printf("%04x: %02x\n", address, data);
 }
 
 void commandVersion() {
@@ -38,6 +47,9 @@ void dispatch(char cmd, char * args) {
       break;
     case 'd':
       commandData(args);
+      break;
+    case 'b':
+      commandReadByte(args);
       break;
     default:
       commandError(cmd);

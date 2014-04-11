@@ -19,4 +19,5 @@ generate_arduino_firmware(ardburno
        src/util.cpp
        src/address_bus.cpp
        src/data_bus.cpp
-       src/printf.cpp)
+       src/printf.cpp
+       src/eeprom.cpp)
