@@ -7,6 +7,10 @@ static FILE uartout = { 0 };
 
 static int uart_putchar(char c, FILE *stream) {
   Serial.write(c);
+  if (c == '\n') {
+    Serial.write('\r');
+  }
+
   return 0;
 }
 
