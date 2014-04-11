@@ -54,7 +54,7 @@ void signal_setup() {
   pinMode(ROM_OE, OUTPUT);
   pinMode(ROM_WE, OUTPUT);
 
-  CE(0);
+  CE(1);
   OE(0);
   WE(0);
 }
