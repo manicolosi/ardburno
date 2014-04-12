@@ -25,6 +25,15 @@ void data_bus_input() {
   pinMode(D7, INPUT);
 }
 
+uint8_t data_bus_read() {
+  WE(0);
+  OE(1);
+  uint8_t data = ((PIND & 0b11111100) >> 2) + ((PINB & 0b00000011) << 6);
+  OE(0);
+
+  return data;
+}
+
 // TODO: Optimize
 void data_bus_write(uint8_t value) {
   digitalWrite(D0, (bitRead(value, 0)));
@@ -35,13 +44,11 @@ void data_bus_write(uint8_t value) {
   digitalWrite(D5, (bitRead(value, 5)));
   digitalWrite(D6, (bitRead(value, 6)));
   digitalWrite(D7, (bitRead(value, 7)));
-}
 
-uint8_t data_bus_read() {
+  WE(1);
   WE(0);
-  OE(1);
-  uint8_t data = ((PIND & 0b11111100) >> 2) + ((PINB & 0b00000011) << 6);
-  OE(0);
 
-  return data;
+  data_bus_input();
+
+  while (data_bus_read() != value) {}
 }
