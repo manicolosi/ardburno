@@ -23,6 +23,38 @@ void commandWriteByte(char * args) {
   eeprom_write_byte(address, data);
 }
 
+unsigned long start = 0;
+
+void start_timing() {
+  start = millis();
+}
+
+void end_timing() {
+  unsigned long total = millis() - start;
+
+  printf("Took %lu.%03lu seconds\n", total / 1000, total % 1000);
+}
+
+void commandTest() {
+  printf("Writing... ");
+  start_timing();
+
+  for (uint16_t i = 0; i < 0x8000; i++) {
+    eeprom_write_byte(i, 0xff);
+  }
+
+  end_timing();
+
+  printf("Reading... ");
+  start_timing();
+
+  for (uint16_t i = 0; i < 0x8000; i++) {
+    eeprom_read_byte(i);
+  }
+
+  end_timing();
+}
+
 void commandVersion() {
   printf("Version %d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 }
@@ -41,6 +73,9 @@ void dispatch(char cmd, char * args) {
       break;
     case 'w':
       commandWriteByte(args);
+      break;
+    case 't':
+      commandTest();
       break;
     default:
       commandError(cmd);

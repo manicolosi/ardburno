@@ -4,6 +4,8 @@
 
 // TODO: Use data direction registers
 void data_bus_output() {
+  //DDRD |= 0b11111100;
+  //DDRC |= 0b00000011;
   pinMode(D0, OUTPUT);
   pinMode(D1, OUTPUT);
   pinMode(D2, OUTPUT);
