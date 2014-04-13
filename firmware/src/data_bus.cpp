@@ -4,16 +4,8 @@
 
 // TODO: Use data direction registers
 void data_bus_output() {
-  //DDRD |= 0b11111100;
-  //DDRC |= 0b00000011;
-  pinMode(D0, OUTPUT);
-  pinMode(D1, OUTPUT);
-  pinMode(D2, OUTPUT);
-  pinMode(D3, OUTPUT);
-  pinMode(D4, OUTPUT);
-  pinMode(D5, OUTPUT);
-  pinMode(D6, OUTPUT);
-  pinMode(D7, OUTPUT);
+  DDRD |= 0b11111100;
+  DDRC |= 0b00000011;
 }
 
 void data_bus_input() {
@@ -52,5 +44,6 @@ void data_bus_write(uint8_t value) {
 
   data_bus_input();
 
-  while (data_bus_read() != value) {}
+  delay(10);
+  //while (data_bus_read() != value) {}
 }

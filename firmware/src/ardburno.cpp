@@ -36,11 +36,14 @@ void end_timing() {
 }
 
 void commandTest() {
-  printf("Writing... ");
+  randomSeed(micros());
+  uint8_t data = random(0xff);
+
+  printf("Writing (%02X)... ", data);
   start_timing();
 
-  for (uint16_t i = 0; i < 0x8000; i++) {
-    eeprom_write_byte(i, 0xff);
+  for (uint16_t i = 0; i < 0x4000; i++) {
+    eeprom_write_byte(i, data);
   }
 
   end_timing();
@@ -48,11 +51,21 @@ void commandTest() {
   printf("Reading... ");
   start_timing();
 
+  uint8_t read_data = 0;
+  int bad_count = 0;
+
   for (uint16_t i = 0; i < 0x8000; i++) {
-    eeprom_read_byte(i);
+    read_data = eeprom_read_byte(i);
+    if (read_data != data) {
+      bad_count++;
+    }
   }
 
   end_timing();
+
+  if (bad_count > 0) {
+    printf("Found %i bad bytes!\n", bad_count);
+  }
 }
 
 void commandVersion() {
