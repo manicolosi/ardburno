@@ -28,6 +28,19 @@ uint8_t data_bus_read() {
   return data;
 }
 
+void poll(uint8_t value) {
+  unsigned long start = millis();
+
+  data_bus_input();
+  while (data_bus_read() != value) {
+    if (millis() - start > 10) {
+      digitalWrite(13, HIGH);
+      break;
+    }
+  }
+  digitalWrite(13, LOW);
+}
+
 // TODO: Optimize
 void data_bus_write(uint8_t value) {
   digitalWrite(D0, (bitRead(value, 0)));
@@ -42,8 +55,6 @@ void data_bus_write(uint8_t value) {
   WE(1);
   WE(0);
 
-  data_bus_input();
-
-  delay(10);
-  //while (data_bus_read() != value) {}
+  //delay(10);
+  poll(value);
 }

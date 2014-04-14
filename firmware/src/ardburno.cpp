@@ -42,7 +42,7 @@ void commandTest() {
   printf("Writing (%02X)... ", data);
   start_timing();
 
-  for (uint16_t i = 0; i < 0x4000; i++) {
+  for (uint16_t i = 0; i < 0x8000; i++) {
     eeprom_write_byte(i, data);
   }
 
@@ -88,7 +88,9 @@ void dispatch(char cmd, char * args) {
       commandWriteByte(args);
       break;
     case 't':
-      commandTest();
+      for (int i = 0; i < 10; i++) {
+        commandTest();
+      }
       break;
     default:
       commandError(cmd);
@@ -97,6 +99,8 @@ void dispatch(char cmd, char * args) {
 }
 
 void signal_setup() {
+  pinMode(13, OUTPUT);
+
   pinMode(ADR_DATA, OUTPUT);
   pinMode(ADR_SCLK, OUTPUT);
   pinMode(ADR_RCLK, OUTPUT);
