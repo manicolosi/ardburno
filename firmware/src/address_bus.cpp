@@ -1,11 +1,7 @@
 #include <Arduino.h>
+#include <SPI.h>
 
 #include "config.h"
-
-void address_bus_clock() {
-  digitalWrite(ADR_SCLK, HIGH);
-  digitalWrite(ADR_SCLK, LOW);
-}
 
 void address_bus_latch() {
   digitalWrite(ADR_RCLK, HIGH);
@@ -13,10 +9,9 @@ void address_bus_latch() {
 }
 
 void address_bus_set(uint16_t value) {
-  for(int i = 15; i >= 0; i--) {
-    digitalWrite(ADR_DATA, bitRead(value, i) != 0);
-    address_bus_clock();
-  }
+  SPI.transfer(value >> 8);
+  SPI.transfer(value);
 
-  address_bus_latch();
+  PORTC |=  0b00000100;
+  PORTC &= ~0b00000100;
 }

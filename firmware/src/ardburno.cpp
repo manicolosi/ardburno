@@ -1,5 +1,7 @@
-#include <stdio.h>
 #include <Arduino.h>
+#include <SPI.h>
+
+#include <stdio.h>
 
 #include "config.h"
 #include "util.h"
@@ -52,7 +54,7 @@ void commandTest() {
   start_timing();
 
   uint8_t read_data = 0;
-  int bad_count = 0;
+  uint16_t bad_count = 0;
 
   for (uint16_t i = 0; i < 0x8000; i++) {
     read_data = eeprom_read_byte(i);
@@ -64,7 +66,7 @@ void commandTest() {
   end_timing();
 
   if (bad_count > 0) {
-    printf("Found %i bad bytes!\n", bad_count);
+    printf("Found %u bad bytes!\n", bad_count);
   }
 }
 
@@ -99,8 +101,6 @@ void dispatch(char cmd, char * args) {
 }
 
 void signal_setup() {
-  pinMode(13, OUTPUT);
-
   pinMode(ADR_DATA, OUTPUT);
   pinMode(ADR_SCLK, OUTPUT);
   pinMode(ADR_RCLK, OUTPUT);
@@ -112,6 +112,8 @@ void signal_setup() {
   CE(1);
   OE(0);
   WE(0);
+
+  SPI.begin();
 }
 
 void setup() {

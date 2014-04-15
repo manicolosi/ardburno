@@ -34,11 +34,9 @@ void poll(uint8_t value) {
   data_bus_input();
   while (data_bus_read() != value) {
     if (millis() - start > 10) {
-      digitalWrite(13, HIGH);
       break;
     }
   }
-  digitalWrite(13, LOW);
 }
 
 // TODO: Optimize
