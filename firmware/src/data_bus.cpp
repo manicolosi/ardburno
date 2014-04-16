@@ -20,10 +20,11 @@ void data_bus_input() {
 }
 
 uint8_t data_bus_read() {
-  WE(0);
-  OE(1);
+  PORTC &= ~0b00010000;
+  __asm__("nop\n\t");
+  __asm__("nop\n\t");
   uint8_t data = ((PIND & 0b11111100) >> 2) + ((PINB & 0b00000011) << 6);
-  OE(0);
+  PORTC |=  0b00010000;
 
   return data;
 }
