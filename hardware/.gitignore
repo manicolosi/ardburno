@@ -3,3 +3,4 @@
 *.pcb-
 *.ps
 *.new.pcb
+export/
