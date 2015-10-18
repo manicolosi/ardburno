@@ -9,9 +9,15 @@ void address_bus_latch() {
 }
 
 void address_bus_set(uint16_t value) {
+  //shiftOut(ADR_DATA, ADR_SCLK, MSBFIRST, value >> 8);
+  //shiftOut(ADR_DATA, ADR_SCLK, MSBFIRST, value);
   SPI.transfer(value >> 8);
   SPI.transfer(value);
 
+  delayMicroseconds(100);
+
   PORTC |=  0b00000100;
   PORTC &= ~0b00000100;
+
+  delayMicroseconds(100);
 }
