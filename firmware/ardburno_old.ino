@@ -73,41 +73,52 @@ void loop() {
   delay(100);
   
   start = millis();
-  readRom(0x0100);
+  readRom(0x0200);
   printTime();
 
   done = true;
 }
 
-#define COLUMNS 64
+#define COLUMNS 32
 
 void readRom(unsigned int count) {
   readSetup();
-
+  Serial.print("Reading...\n");
   for(unsigned int i = 0; i < count; i += COLUMNS) {
+    if (i % 0x100 == 0) {
+      Serial.print('\n');
+    }
     p("%04X", i);
 
     for (int j = 0; j < COLUMNS; j++) {
       shiftValue(i + j);
-      p(" %02X", readByte());
+      if (j % 16 == 0) {
+        p("   %02X", readByte());
+      } else {
+        p(" %02X", readByte());
+      }
+      delayMicroseconds(1);
     }
 
     Serial.print('\n');
   }
 }
 
-#define BYTE_TO_WRITE 33
+#define BYTE_TO_WRITE 0x20
+#define BYTE_TO_WRITE2 0x60
 
 void writeRom() {
   writeSetup();
+  Serial.print("Writing");
 
-  for(unsigned int i = 0; i < 0x0100; i += COLUMNS) {
+  for(unsigned int i = 0x0000; i < 0x0200; i += COLUMNS) {
     if (i % 0x1000 == 0) {
       p("\n%04X ", i);
     }
 
     for (int j = 0; j < COLUMNS; j++) {
-      writeByte(i + j, BYTE_TO_WRITE);
+      writeByte(i + j, (j % 2 ? BYTE_TO_WRITE : BYTE_TO_WRITE2));
+//      writeByte(i+j, (i+j) % 0x100+1);
     }
 
     Serial.print('.');
@@ -142,14 +153,13 @@ void writeSetup() {
 
   digitalWrite(ROM_OE, HIGH);
   digitalWrite(ROM_WE, HIGH);
+
+  delay(10);
 }
 
+// Timings: https://media.digikey.com/pdf/Data%20Sheets/Atmel%20PDFs/AT28HC256%20(Dec99).pdf
 void writeByte(unsigned int address, byte value) {
   shiftValue(address);
-
-  delay(5); // tADH
-  
-  digitalWrite(ROM_WE, LOW);
 
   digitalWrite(D0, (bitRead(value, 0)));
   digitalWrite(D1, (bitRead(value, 1)));
@@ -160,11 +170,11 @@ void writeByte(unsigned int address, byte value) {
   digitalWrite(D6, (bitRead(value, 6)));
   digitalWrite(D7, (bitRead(value, 7)));
 
-  delay(5); // tWP
-
+  digitalWrite(ROM_WE, LOW);
+  delayMicroseconds(1);
   digitalWrite(ROM_WE, HIGH);
 
-  delay(15); // ?
+  delay(10); // tWC (Write Cycle Time) 10ms
 }
 
 byte readByte() {
@@ -173,12 +183,18 @@ byte readByte() {
 }
 
 void shiftValue(unsigned int value) {
-  for (int i = 15; i >= 0; i--) {
-    digitalWrite(ADR_DATA, bitRead(value, i) != 0);
-    digitalWrite(ADR_SCLK, HIGH);
-    digitalWrite(ADR_SCLK, LOW);
-  }
+  shiftOut(ADR_DATA, ADR_SCLK, MSBFIRST, (value >> 8));
+  shiftOut(ADR_DATA, ADR_SCLK, MSBFIRST, value);
+
+  digitalWrite(ADR_RCLK, LOW);
   digitalWrite(ADR_RCLK, HIGH);
   digitalWrite(ADR_RCLK, LOW);
-}
 
+  //for (int i = 15; i >= 0; i--) {
+  //  digitalWrite(ADR_DATA, bitRead(value, i) != 0);
+  //  digitalWrite(ADR_SCLK, HIGH);
+  //  digitalWrite(ADR_SCLK, LOW);
+  //}
+  //digitalWrite(ADR_RCLK, HIGH);
+  //digitalWrite(ADR_RCLK, LOW);
+}
